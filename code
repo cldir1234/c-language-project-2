@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 학생 구조체 정의
+struct Student {
+  char name[20];
+  int kor;
+  int eng;
+};
+
+int main() {
+  // 파일 열기
+  FILE *file = fopen("sj.txt", "w");
+
+  if (file == NULL) {
+    printf("파일을 열 수 없습니다.\n");
+    return 1;
+  }
+
+  // 세 명의 학생 정보 초기화
+  struct Student students[3] = {
+      {"Shim", 90, 85}, {"Kim", 78, 92}, {"Park", 88, 79}};
+
+  // 각 학생의 성적 출력 및 파일에 쓰기
+  printf("+-------------------+-------+--------+\n");
+  printf("|      Name         | Korean| English|\n");
+  fprintf(file, "Name          Korean English Average\n");
+  printf("+-------------------+-------+--------+\n");
+
+  for (int i = 0; i < 3; i++) {
+    printf("| %-17s | %5d | %6d |\n", students[i].name, students[i].kor,
+           students[i].eng);
+    fprintf(file, "%-11s %4d %6d %7d\n", students[i].name, students[i].kor,
+            students[i].eng, (students[i].kor + students[i].eng) / 2);
+  }
+
+  printf("+-------------------+-------+--------+\n");
+
+  // 각 과목의 평균 계산
+  float avg_kr = 0.0;
+  float avg_en = 0.0;
+
+  for (int i = 0; i < 3; i++) {
+    avg_kr += students[i].kor;
+    avg_en += students[i].eng;
+  }
+
+  avg_kr = avg_kr / 3.0;
+  avg_en = avg_en / 3.0;
+
+  printf("\n+-------------------+-------+--------+\n");
+  printf("|      Average      | %5.2f | %6.2f |\n", avg_kr, avg_en);
+  fprintf(file, "\nAverage       %5.2f %6.2f\n", avg_kr, avg_en);
+  printf("+-------------------+-------+--------+\n");
+
+  // 파일 닫기
+  fclose(file);
+
+  // 파일 다시 열기 (읽기 모드)
+  file = fopen("sj.txt", "r");
+
+  if (file == NULL) {
+    printf("파일을 열 수 없습니다.\n");
+    return 1;
+  }
+
+  // 헤더 라인 무시
+  char buffer[100];
+  fgets(buffer, sizeof(buffer), file);
+
+  // 학생 정보 읽어오기 및 출력 및 과목 평균 업데이트
+  printf("\n+-------------------+-------+--------+\n");
+  printf("|      Name         | Korean| English|\n");
+  printf("+-------------------+-------+--------+\n");
+
+  struct Student student;
+
+  while (fscanf(file, "%19[^,],%d,%d\n", student.name, &student.kor,
+                &student.eng) == 3) {
+    printf("| %-17s | %5d | %6d |\n", student.name, student.kor, student.eng);
+
+    // 각 과목의 평균 업데이트
+    avg_kr += student.kor;
+    avg_en += student.eng;
+  }
+
+  // 파일 닫기
+  fclose(file);
+
+  // 전체 평균 계산
+  avg_kr = avg_kr / 4.0; // 4명의 학생 정보를 읽었으므로 4로 나눔
+  avg_en = avg_en / 4.0;
+
+  printf("+-------------------+-------+--------+\n");
+  printf("|      Average      | %5.2f | %6.2f |\n", avg_kr, avg_en);
+  printf("+-------------------+-------+--------+\n");
+
+  return 0;
+}
